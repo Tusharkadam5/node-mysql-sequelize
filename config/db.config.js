@@ -1,8 +1,8 @@
 const db = {
     HOST: "localhost",
     USER: "root",
-    PASSWORD: "",
-    DB: "testdb",
+    PASSWORD: "root",
+    DB: "nodetestdb",
     dialect: "mysql",
     pool: {
       max: 5,
