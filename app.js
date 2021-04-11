@@ -6,14 +6,17 @@ var logger = require('morgan');
 
 // var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users.routes');
+const swaggerUi = require('swagger-ui-express'),
+swaggerDocument = require('./swagger.json');
 
 var app = express();
 
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-const swaggerDocument = YAML.load('./swagger.yaml');
+// const swaggerUi = require('swagger-ui-express');
+// const YAML = require('yamljs');
+// const swaggerDocument = YAML.load('./swagger.yaml');
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

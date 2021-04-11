@@ -1,0 +1,275 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "My User Project CRUD",
+      "description": "My User Project Application API",
+      "license": {
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+      }
+    },
+    "host": "localhost:3000",
+    "basePath": "/",
+    "tags": [
+      {
+        "name": "Users",
+        "description": "API for users in the system"
+      }
+    ],
+    "schemes": [
+      "http"
+    ],
+    "consumes": [
+      "application/json"
+    ],
+    "produces": [
+      "application/json"
+    ],
+    "paths": {
+      "/api/auth/signin": {
+         "post": {
+           "tags": [
+             "Users"
+           ],
+           "description": "Login with user",
+           "parameters": [
+             {
+               "name": "Login",
+               "in": "body",
+               "description": "login details",
+               "schema": {
+                 "$ref": "#/definitions/Login"
+               }
+             }
+           ],
+           "produces": [
+             "application/json"
+           ],
+           "responses": {
+             "200": {
+               "description": "user loged in sucssefully",
+               "schema": {
+                 "$ref": "#/definitions/User"
+               }
+             }
+           }
+         } 
+       },
+      "/api/users": {
+        "post": {
+          "tags": [
+            "Users"
+          ],
+          "description": "Create new user in system",
+          "parameters": [
+            {
+              "name": "api/users",
+              "in": "body",
+              "description": "User that we want to create",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "New user is created",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        } 
+      },
+      "/api/users/search/{page}/{size}/{search}": {
+         "parameters": [
+            {
+              "name": "page",
+              "in": "path",
+              "required": true,
+              "description": "Add Page No",
+              "type": "integer"
+            },
+            {
+               "name": "size",
+               "in": "path",
+               "required": true,
+               "description": "Add item per page",
+               "type": "integer"
+             },
+             {
+               "name": "search",
+               "in": "path",
+               "required": false,
+               "description": "Search or filter for any field ",
+               "type": "string"
+             }
+          ],
+        "get": {
+            "tags": [
+              "Users"
+            ],
+            "summary": "Get all search result of users",
+            "responses": {
+              "200": {
+                "description": "OK",
+                "schema": {
+                  "$ref": "#/definitions/Users"
+                }
+              }
+            }
+          }
+      },
+      "/api/users/{page}/{size}": {
+         "parameters": [
+            {
+              "name": "page",
+              "in": "path",
+              "required": true,
+              "description": "Add Page No",
+              "type": "integer"
+            },
+            {
+               "name": "size",
+               "in": "path",
+               "required": true,
+               "description": "Add item per page",
+               "type": "integer"
+             }
+          ],
+        "get": {
+            "tags": [
+              "Users"
+            ],
+            "summary": "Get all users in system",
+            "responses": {
+              "200": {
+                "description": "OK",
+                "schema": {
+                  "$ref": "#/definitions/Users"
+                }
+              }
+            }
+          }
+      },
+      "/api/users/{id}": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of user that we want to find",
+            "type": "integer"
+          }
+        ],
+        "delete": {
+          "summary": "Delete user with given ID",
+          "tags": [
+            "Users"
+          ],
+          "responses": {
+            "200": {
+              "description": "User is deleted",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        },
+        "put": {
+          "summary": "Update user with give ID",
+          "tags": [
+            "Users"
+          ],
+          "parameters": [
+            {
+              "name": "user",
+              "in": "body",
+              "description": "User with new values of properties",
+              "schema": {
+                "$ref": "#/definitions/updateUser"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User is updated",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "Login": {
+         "required": [
+           "email",
+           "password"
+         ],
+         "properties": {
+          "email": {
+             "type": "string"
+           },
+           "password": {
+             "type": "string"
+           }
+         }
+       },
+      "User": {
+        "required": [
+          "firstname",
+          "lastname",
+          "email",
+          "password"
+        ],
+        "properties": {
+         "email": {
+            "type": "string"
+          },
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "updateUser": {
+        "required": [
+          "id"
+        ],
+        "properties": {
+         "id": {
+           "type": "integer",
+           "uniqueItems": true
+         },
+         "firstname": {
+           "type": "string"
+         },
+         "email": {
+            "type": "string"
+          },
+         "lastname": {
+           "type": "string"
+         },
+         "updatedAt": {
+           "type": "date"
+         }
+       }
+      },
+      "Users": {
+        "type": "array",
+        "$ref": "#/definitions/User"
+      }
+     
+    }
+  }

@@ -1,6 +1,57 @@
 const db = require("../models");
+const config = require('../config/db.config')
 const User = db.userModel;
 const Op = db.Sequelize.Op;
+
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const secret = 'mysecretkey';
+var jwt = require("jsonwebtoken");
+
+// User signin
+exports.signin = (req, res) => {
+  console.log(req.body)
+  User.findOne({
+    where: {
+      email: req.body.email
+    }
+  })
+    .then(user => {
+      if (!user) {
+        return res.status(404).send({ message: "User Not found." });
+      }
+
+      // var passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
+      bcrypt.compare(req.body.password, user.password, function(err, result) {
+        if (err) {
+          return res.status(404).send({ message: "Somthing went wrong." });
+        }
+        var passwordIsValid = result;
+        if (!passwordIsValid) {
+          return res.status(401).send({
+            accessToken: null,
+            message: "Invalid Password!"
+          });
+        }
+  
+        var token = jwt.sign({ id: user.id }, secret, {
+          expiresIn: 86400 // 24 hours
+        });
+
+        res.status(200).send({
+          id: user.id,
+          username: user.firstname,
+          email: user.email,
+          accessToken: token
+        });
+
+      });
+   
+    })
+    .catch(err => {
+      res.status(500).send({ message: err.message });
+    });
+};
 
 // Create and Save a new User
 exports.create = (req, res) => {
@@ -17,9 +68,15 @@ exports.create = (req, res) => {
         firstname: req.body.firstname,
         lastname: req.body.lastname,
         email: req.body.email,
-        password:req.body.password
+        password: bcrypt.hashSync(req.body.password, saltRounds)
       };
-    
+      
+      // bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+      //   console.log(err);
+      //   users.password = hash;
+      // });
+      console.log(users);
+
       // Save User in the database
       User.create(users)
         .then(data => {
@@ -33,16 +90,46 @@ exports.create = (req, res) => {
         });
 };
 
-// Retrieve all Users from the database.
-exports.findAll = (req, res) => {
-    const firstName = req.query.firstname;
-    var condition = firstName ? { title: { [Op.like]: `%${firstName}%` } } : null;
+// Retrieve all Users from the database with filter.
+exports.findAllWithSearch = (req, res) => {
+  const { page, size, search } = req.params;
+  console.log(req.params);
+  console.log(page,'=== '+ size )
+  const { limit, offset } = getPagination(page, size);
+  var condition = null;
+if(search != 'undefined' ){
+     condition =  { [Op.or]: [
+      {firstname: { [Op.like]: `%${search}%` }},
+      {lastname: { [Op.like]: `%${search}%` }},
+      {email: { [Op.like]: `%${search}%` }}
+     ]
+    }
+  }
 
-    User.findAndCountAll({
-       // where: condition,
-        limit: 2,
-        offset: 0
-    })
+console.log('condition', condition);
+    User.findAndCountAll({ where: condition, limit, offset })
+      .then(data => {
+        const response = getPagingData(data, page, limit);
+        res.send(response);
+      })
+      .catch(err => {
+        res.status(500).send({
+          message:
+            err.message || "Some error occurred while retrieving Users."
+        });
+      });
+  };
+
+  // Find all  Users
+exports.findAll = (req, res) => {
+  const { page, size } = req.params;
+  const { limit, offset } = getPagination(page, size);
+
+    User.findAndCountAll({ limit, offset })
+      .then(data => {
+        const response = getPagingData(data, page, limit);
+        res.send(response);
+      })
       .then(data => {
         res.send(data);
       })
@@ -57,7 +144,7 @@ exports.findAll = (req, res) => {
 // Find a single User with an id
 exports.findOne = (req, res) => {
     const id = req.params.id;
-  
+  console.log(id);
     User.findByPk(id)
       .then(data => {
         res.send(data);
@@ -120,23 +207,17 @@ exports.delete = (req, res) => {
   };
 
 
-// Find all published Users
-exports.findAllWithSearch = (req, res) => {
-   var condition = firstName ? { title: { [Op.like]: `%${firstName}%` } } : null;
+  const getPagingData = (data, page, limit) => {
+    const { count: totalItems, rows: users } = data;
+    const currentPage = page ? +page : 0;
+    const totalPages = Math.ceil(totalItems / limit);
+  
+    return { totalItems, users, totalPages, currentPage };
+  };
 
-       // where: condition,
-   User.findAll({
-        where: condition,
-        limit: 2,
-        offset: 0
-    })
-      .then(data => {
-        res.send(data);
-      })
-      .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred while retrieving Users."
-        });
-      });
+  const getPagination = (page, size) => {
+    const limit = size ? +size : 1;
+    const offset = page ? page * limit : 0;
+  
+    return { limit, offset };
   };
