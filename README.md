@@ -2,6 +2,8 @@
 
 ## Available Scripts
 
+Find the `sql-database.txt` file in project directory and need to create mysql database on your local.
+
 In the project directory, you can run:
 
 ### `npm i`
